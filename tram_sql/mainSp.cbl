@@ -45,6 +45,17 @@
            05  SQL-S-FIRSTNAME          PIC X(06).
            05  SQL-S-AGE                PIC 9(02).
 
+       01  WS-SQL-GRADE.
+           05 SQL-G-ID                  PIC 9(05).
+           05 SQL-G-S-ID                PIC 9(05).
+           05 SQL-G-C-ID                PIC 9(05).
+           05 SQL-G-LABEL               PIC X(25)
+
+       01  WS-SQL-COURSE.
+           05 SQL-C-ID                  PIC 9(05).
+           05 SQL-C-LABEL               PIC X(21).
+           05 SQL-C-COEF                PIC 99v99.
+           05 SQL-C-AVG                 PIC 99V99.
 
        EXEC SQL END DECLARE SECTION END-EXEC.
 
