@@ -1,8 +1,12 @@
+      ******************************************************************
+      *    Cette application s'occupede migrer des données
+      *    d'un fichier vers une BDD
+      ******************************************************************
        IDENTIFICATION DIVISION.
        PROGRAM-ID. mainsp.
        AUTHOR. Yves.
 
-       ENVIRONMENT DIVISION.
+        ENVIRONMENT DIVISION.
        CONFIGURATION SECTION.
        SPECIAL-NAMES.
            DECIMAL-POINT IS COMMA.
@@ -29,33 +33,31 @@
            03 R-S-FIRSTNAME      PIC X(06).       
            03 R-S-AGE            PIC 9(02).
 
+       01  REC-COURSE.
+           03 R-C-KEY            PIC 9(02).       
+           03 R-C-LABEL          PIC X(21).       
+           03 R-C-COEF           PIC X(03).       
+           03 R-C-GRADE          PIC X(05).
+
        WORKING-STORAGE SECTION.
        01  F-INPUT-STATUS      PIC X(02) VALUE SPACE.
            88 F-INPUT-STATUS-OK    VALUE '00'.        
            88 F-INPUT-STATUS-EOF   VALUE '10'.
 
        EXEC SQL BEGIN DECLARE SECTION END-EXEC.
-       01  DBNAME                  PIC  X(30) VALUE 'cblsql'.
+       01  DBNAME                  PIC  X(30) VALUE 'school'.
        01  USERNAME                PIC  X(30) VALUE 'cobol'.
        01  PASSWD                  PIC  X(10) VALUE SPACE.
 
-       01  WS-SQL-STUDENT.
-           05  SQL-S-ID                 PIC 9(05).
+       01  SQL-STUDENT.
            05  SQL-S-LASTNAME           PIC X(07).
            05  SQL-S-FIRSTNAME          PIC X(06).
            05  SQL-S-AGE                PIC 9(02).
-
-       01  WS-SQL-GRADE.
-           05 SQL-G-ID                  PIC 9(05).
-           05 SQL-G-S-ID                PIC 9(05).
-           05 SQL-G-C-ID                PIC 9(05).
-           05 SQL-G-LABEL               PIC X(25)
-
-       01  WS-SQL-COURSE.
-           05 SQL-C-ID                  PIC 9(05).
-           05 SQL-C-LABEL               PIC X(21).
-           05 SQL-C-COEF                PIC 99v99.
-           05 SQL-C-AVG                 PIC 99V99.
+       
+       01  SQL-COURSE.
+           05  SQL-C-LABEL              PIC X(35).
+           05  SQL-C-COEF               PIC 9V9.
+           05  SQL-C-GRADE              PIC 99v99.
 
        EXEC SQL END DECLARE SECTION END-EXEC.
 
@@ -71,9 +73,12 @@
                PERFORM 1001-ERROR-RTN-START
                    THRU 1001-ERROR-RTN-END
            END-IF.
-               
-           PERFORM 3001-SQL-TBL-STUDENT-START
-               THRU 3001-SQL-TBL-STUDENT-END.
+           
+           PERFORM 3001-SQL-TBL-CREATION-START
+               THRU 3001-SQL-TBL-CREATION-END.
+           
+           PERFORM 7001-FILE-READ-START
+               THRU 7001-FILE-READ-END.
 
        1000-MAIN-END.
            EXEC SQL COMMIT WORK END-EXEC.
@@ -94,6 +99,7 @@
                  DISPLAY "PostgreSQL error"
                  DISPLAY "ERRCODE:" SPACE SQLSTATE
                  DISPLAY SQLERRMC
+              *> TO RESTART TRANSACTION, DO ROLLBACK.
                  EXEC SQL
                      ROLLBACK
                  END-EXEC
@@ -105,3 +111,95 @@
        1001-ERROR-RTN-END.
            STOP RUN. 
       ******************************************************************
+       3001-SQL-TBL-CREATION-START.
+           EXEC SQL 
+               DROP TABLE IF EXISTS STUDENT
+           END-EXEC.
+
+           EXEC SQL 
+               CREATE TABLE STUDENT
+               (
+                   ID        SERIAL,
+                   LASTNAME  CHAR(35) NOT NULL DEFAULT 'DUPOND',
+                   FIRSTNAME CHAR(35) NOT NULL DEFAULT 'MonsieurMadame',
+                   AGE       SMALLINT(3) NOT NULL DEFAULT 99,
+                   CONSTRAINT STUDENT_ID_0 PRIMARY KEY (ID)
+               )               
+           END-EXEC.
+           
+           EXEC SQL 
+               DROP TABLE IF EXISTS COURSE
+           END-EXEC.
+           
+           EXEC SQL 
+               CREATE TABLE COURSE
+               (
+                   ID        SERIAL,
+                   LABEL     CHAR(35) NOT NULL DEFAULT 'Manquant',
+                   COEF      NUMERIC(3,1) NOT NULL DEFAULT 1,
+                   CONSTRAINT COURSE_ID_0 PRIMARY KEY (ID)
+               )               
+           END-EXEC.
+
+       3001-SQL-TBL-CREATION-END.
+      ******************************************************************
+       7001-FILE-READ-START.
+           OPEN INPUT F-INPUT.
+           IF NOT F-INPUT-STATUS-OK
+               DISPLAY 'ABORT POPULATING TABLE'
+               GO TO 7001-FILE-READ-END
+           END-IF.
+           
+           PERFORM UNTIL F-INPUT-STATUS-EOF
+               READ F-INPUT
+               EVALUATE REC-F-INPUT-2
+                   WHEN '01'
+                       PERFORM 7101-FILE-HANDLE-STUDENT-START
+                           THRU 7101-FILE-HANDLE-STUDENT-END
+                   WHEN '02'
+                        PERFORM 7102-FILE-HANDLE-COURSE-START
+                           THRU 7102-FILE-HANDLE-COURSE-END
+                   WHEN OTHER
+                       CONTINUE
+               END-EVALUATE
+           END-PERFORM.
+       7001-FILE-READ-END.
+           CLOSE F-INPUT.
+      ******************************************************************
+       7101-FILE-HANDLE-STUDENT-START.
+           MOVE R-S-LASTNAME TO SQL-S-LASTNAME.
+           MOVE R-S-FIRSTNAME TO SQL-S-FIRSTNAME.
+           MOVE R-S-AGE TO SQL-S-AGE.
+
+           EXEC SQL
+               INSERT INTO student (LASTNAME,FIRSTNAME,AGE) 
+               VALUES (
+                   :SQL-S-LASTNAME, 
+                   :SQL-S-FIRSTNAME,
+                   :SQL-S-AGE
+                   )
+           END-EXEC.
+       7101-FILE-HANDLE-STUDENT-END.
+      ******************************************************************
+       7102-FILE-HANDLE-COURSE-START.
+           MOVE R-C-LABEL TO SQL-C-LABEL.
+           MOVE R-C-COEF TO SQL-C-COEF.
+           MOVE R-C-GRADE TO SQL-C-GRADE.
+
+           EXEC SQL
+               INSERT INTO COURSE (LABEL,COEF) 
+               VALUES (
+                   :SQL-C-LABEL, 
+                   :SQL-C-COEF
+                   )
+           END-EXEC.
+           
+           EXEC SQL
+               INSERT INTO GRADE(GRADE_LABEL)
+               VALUE (
+                  :SQL-C-GRADE
+               )
+           END-EXEC.
+
+       7102-FILE-HANDLE-COURSE-END.
+       
