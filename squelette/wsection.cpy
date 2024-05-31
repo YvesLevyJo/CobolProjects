@@ -1,0 +1,9 @@
+           INITIALIZE OUTPUT-RECORD.           
+           MOVE BLANK-LINE TO OUTPUT-RECORD.
+           WRITE OUTPUT-RECORD.
+
+           INITIALIZE OUTPUT-RECORD.
+           STRING MARGIN-7, "WORKING-STORAGE SECTION."
+           INTO OUTPUT-RECORD.
+           WRITE OUTPUT-RECORD.
+           

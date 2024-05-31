@@ -1,0 +1,15 @@
+● Définir :
+	○ Signification acronyme COBOL
+		Common organized buisness oriented language
+	○ Phrase COBOL
+		Une phrase est une instruction commençant par un verbe et se cloturant par un point.
+	○ Paragraphe COBOL
+		Un paragrahe est un bloc logique regroupant plusieurs phrases.
+● Exposer :
+	○ En présenter les grands principes en quelques phrases
+		
+	○ Les principaux éléments de la structure physique
+		Programme découpé en division elle meme découpé en section
+		Structure en colonne marge 6 eme colonne pour "*" commentaire ou "d" de debug
+		Marge a (colonne è à 11) Nom des division, de ssections, et des variable commencent par l'etiquette 01.
+		Marge b (a partir colonne 12) autres variables et algorithme de la procedure division.

@@ -40,7 +40,6 @@
                    INDEXED BY WS-INDEX.
             05 FILLER   PIC X(13).
 
-       01  WS-REC-INPUT   PIC X(250). 
        01  WS-CONT  PIC 9(01) VALUE 1.
        01  VAR      PIC 9(02) VALUE 1.
        01  WS-SPACE-NUM PIC 9(02).
@@ -54,39 +53,38 @@
        0000-MAIN-START.
            PERFORM 1000-READ-IN-START
               THRU 1000-READ-IN-END.
-          
-
-           
-
-           MOVE '       01 GROUPE.' TO REC-F-OUTPUT
-           WRITE REC-F-OUTPUT.
-           
-           PERFORM UNTIL WS-POINTER = WS-FULL-RECORD-LENGTH
-              PERFORM 1001-COUNT-LABEL-START
-                 THRU 1001-COUNT-LABEL-END
-           END-PERFORM.
        0000-MAIN-END.
            STOP RUN.
 
        1000-READ-IN-START.
            OPEN INPUT F-INPUT.
+           OPEN OUTPUT F-OUTPUT.
            READ F-INPUT.
            INSPECT REC-F-INPUT 
             TALLYING WS-FULL-RECORD-LENGTH 
             FOR CHARACTERS.
-           MOVE REC-F-INPUT TO WS-REC-INPUT.           
-       1000-READ-IN-END.
-           CLOSE F-INPUT.
-          
-
-       1001-COUNT-LABEL-START.
-           UNSTRING REC-F-INPUT DELIMITED BY SPACE INTO WS-SAMPLE.
-           INSPECT WS-SAMPLE tallying WS-SAMPLE-COUNT FOR characters.
+           DISPLAY 'WS-FULL-RECORD-LENGTH' SPACE WS-FULL-RECORD-LENGTH.
            
+
+           PERFORM 1001-COUNT-LABEL-START
+              THRU 1001-COUNT-LABEL-END.
+           
+
+           MOVE '       01 GROUPE.' TO REC-F-OUTPUT
+           WRITE REC-F-OUTPUT.
+              
            STRING '           03 FILLER PIC (', 
            ws-SAMPLE-COUNT,') VALUE' SPACE, "'",WS-SAMPLE,"'." 
            INTO REC-F-OUTPUT.
            WRITE REC-F-OUTPUT.
+
+       1000-READ-IN-END.
+           CLOSE F-INPUT.
+           CLOSE F-OUTPUT.
+
+       1001-COUNT-LABEL-START.
+           UNSTRING REC-F-INPUT DELIMITED BY SPACE INTO WS-SAMPLE.
+           INSPECT WS-SAMPLE tallying WS-SAMPLE-COUNT FOR characters.
        1001-COUNT-LABEL-END.
            EXIT.
 

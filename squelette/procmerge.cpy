@@ -1,0 +1,19 @@
+           INITIALIZE OUTPUT-RECORD.
+           STRING WS-PARA-NUM, "-", WS-PARA-NAME,"-START."
+           INTO OUTPUT-RECORD.
+           WRITE OUTPUT-RECORD.
+
+           INITIALIZE OUTPUT-RECORD.
+           STRING "MERGE", SPACE, WS-MERGED-FILE-NAME
+           INTO OUTPUT-RECORD.
+           WRITE OUTPUT-RECORD.
+
+           STRING "ON ASCENDING KEY Key-Merged"
+           STRING "USING", SPACE, WS-FILE-B, ",", SPACE, WS-FILE-B
+           STRING "OUTPUT PROCEDURE Write-Merged-Records.
+           
+           INITIALIZE OUTPUT-RECORD.
+           STRING WS-PARA-NUM, "-", WS-PARA-NAME,"-END."
+           INTO OUTPUT-RECORD.
+           WRITE OUTPUT-RECORD.
+

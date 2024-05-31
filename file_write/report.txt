@@ -1,0 +1,4 @@
+RAPPORT ASSURANCE CLIENT
+Généré le : 05/05/2024
+
+|  ID  |  ID CLIENT   |      GROUP             |  NAME                         |  LABEL                                    |      STATUS        |     FROM         |     TO           |  AMOUNT        |
